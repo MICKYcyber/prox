@@ -9,93 +9,60 @@
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const newWin = window.open("about:blank", "_blank");
+  if (!newWin) return;
 
-  if (newWin) {
-    // Build full HTML content as a string
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Lincoln's Proxy</title>
-<style>
-body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#121212; color:#fff; }
-#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow-x:auto; white-space:nowrap; padding-left:4px; }
-.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; transition:background 0.2s; display:flex; align-items:center; position:relative; }
-.tab.active { background:#121212; color:#fff; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
-.tab .closeBtn { margin-left:8px; background:#555; border:none; border-radius:50%; width:16px; height:16px; font-size:12px; color:#fff; cursor:pointer; }
-.tab .closeBtn:hover { background:#f44336; }
-#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; }
-#search { flex:1; padding:8px 12px; font-size:14px; border:none; border-radius:20px; background:#2c2c2c; color:#fff; outline:none; }
-#goBtn,#newTabBtn { margin-left:6px; padding:8px 14px; font-size:14px; border:none; border-radius:4px; background:#333; color:#fff; cursor:pointer; transition:background 0.2s; }
-#goBtn:hover,#newTabBtn:hover { background:#444; }
-#view { flex:1; position:relative; background:#000; }
-iframe { width:100%; height:100%; border:none; }
-#loader { position:absolute; top:10px; right:10px; width:20px; height:20px; border:3px solid #444; border-top:3px solid #4CAF50; border-radius:50%; animation:spin 1s linear infinite; display:none; }
-@keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
-</style>
-</head>
-<body>
-<div id="tabs"></div>
-<div id="toolbar">
-<input type="text" id="search" placeholder="Search Google or type a URL">
-<button id="goBtn">Go</button>
-<button id="newTabBtn">+</button>
-</div>
-<div id="view"><div id="loader"></div></div>
+  const html = [
+    '<!DOCTYPE html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="UTF-8">',
+    '<title>Lincoln\'s Proxy</title>',
+    '<style>',
+    'body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#121212; color:#fff; }',
+    '#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow-x:auto; white-space:nowrap; padding-left:4px; }',
+    '.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; }',
+    '.tab.active { background:#121212; color:#fff; font-weight:bold; }',
+    '.tab .closeBtn { margin-left:8px; background:#555; border:none; border-radius:50%; width:16px; height:16px; font-size:12px; color:#fff; cursor:pointer; }',
+    '.tab .closeBtn:hover { background:#f44336; }',
+    '#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; }',
+    '#search { flex:1; padding:8px 12px; font-size:14px; border:none; border-radius:20px; background:#2c2c2c; color:#fff; outline:none; }',
+    '#goBtn,#newTabBtn { margin-left:6px; padding:8px 14px; font-size:14px; border:none; border-radius:4px; background:#333; color:#fff; cursor:pointer; }',
+    '#goBtn:hover,#newTabBtn:hover { background:#444; }',
+    '#view { flex:1; position:relative; background:#000; }',
+    'iframe { width:100%; height:100%; border:none; }',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<div id="tabs"></div>',
+    '<div id="toolbar">',
+    '<input type="text" id="search" placeholder="Search Google or type a URL">',
+    '<button id="goBtn">Go</button>',
+    '<button id="newTabBtn">+</button>',
+    '</div>',
+    '<div id="view"></div>',
+    '<script>',
+    'const PROXY_BASE="https://prox-khzr.onrender.com/proxy?url=";',
+    'const tabs=[]; let activeTab=null;',
+    'function createTab(url){',
+    'const id=Date.now(); const iframe=document.createElement("iframe"); iframe.src=PROXY_BASE+encodeURIComponent(url); iframe.onload=()=>{};',
+    'const tabBtn=document.createElement("div"); tabBtn.className="tab"; const titleSpan=document.createElement("span"); titleSpan.className="title"; titleSpan.textContent=url;',
+    'const closeBtn=document.createElement("button"); closeBtn.className="closeBtn"; closeBtn.textContent="×"; closeBtn.onclick=e=>{ e.stopPropagation(); tabBtn.remove(); iframe.remove(); };',
+    'tabBtn.appendChild(titleSpan); tabBtn.appendChild(closeBtn); tabBtn.onclick=()=>{ document.querySelectorAll("iframe").forEach(f=>f.style.display="none"); iframe.style.display="block"; };',
+    'document.getElementById("view").appendChild(iframe); document.getElementById("tabs").appendChild(tabBtn); tabs.push({id,iframe,tabBtn,url}); iframe.style.display="block"; }',
+    'document.getElementById("newTabBtn").onclick=()=>{createTab("https://www.google.com");};',
+    'document.getElementById("goBtn").onclick=()=>{ const val=document.getElementById("search").value; if(val) createTab(val);};',
+    'createTab("https://www.google.com");',
+    '</script>',
+    '</body>',
+    '</html>'
+  ].join("\n");
 
-<script>
-const PROXY_BASE = "https://prox-khzr.onrender.com/proxy?url=";
-const tabs = [];
-let activeTab = null;
-const loader = document.getElementById("loader");
+  newWin.document.open();
+  newWin.document.write(html);
+  newWin.document.close();
 
-let draggedTab=null;
-function allowDrop(e){e.preventDefault();}
-function drag(e){draggedTab=e.target;}
-function drop(e){e.preventDefault(); if(draggedTab!==e.target){const allTabs=Array.from(document.querySelectorAll('.tab')); const draggedIndex=allTabs.indexOf(draggedTab); const targetIndex=allTabs.indexOf(e.target); if(draggedIndex<targetIndex) e.target.after(draggedTab); else e.target.before(draggedTab); }}
-
-function createTab(inputURL){
-  const id=Date.now();
-  const iframe=document.createElement("iframe");
-  iframe.src=formatURL(inputURL);
-  loader.style.display="block";
-  iframe.onload=()=>{loader.style.display="none"; try{const title=iframe.contentDocument.title||inputURL; const tabObj=tabs.find(t=>t.id===id); if(tabObj) tabObj.tabBtn.querySelector(".title").textContent=title;}catch(e){const tabObj=tabs.find(t=>t.id===id); if(tabObj) tabObj.tabBtn.querySelector(".title").textContent=inputURL;}};
-  const tabBtn=document.createElement("div"); tabBtn.className="tab"; tabBtn.draggable=true; tabBtn.ondragstart=drag; tabBtn.ondragover=allowDrop; tabBtn.ondrop=drop;
-  const titleSpan=document.createElement("span"); titleSpan.className="title"; titleSpan.textContent=inputURL;
-  const closeBtn=document.createElement("button"); closeBtn.className="closeBtn"; closeBtn.textContent="×"; closeBtn.onclick=(e)=>{ e.stopPropagation(); closeTab(id); };
-  tabBtn.appendChild(titleSpan); tabBtn.appendChild(closeBtn); tabBtn.onclick=()=>switchTab(id);
-  document.getElementById("view").appendChild(iframe);
-  document.getElementById("tabs").appendChild(tabBtn);
-  tabs.push({id,iframe,tabBtn,url:inputURL}); switchTab(id);
-}
-
-function switchTab(id){tabs.forEach(t=>{t.iframe.style.display="none";t.tabBtn.classList.remove("active");}); const tab=tabs.find(t=>t.id===id); if(tab){tab.iframe.style.display="block"; tab.tabBtn.classList.add("active"); activeTab=tab; document.getElementById("search").value=tab.url;}}
-
-function closeTab(id){const idx=tabs.findIndex(t=>t.id===id); if(idx===-1) return; const tab=tabs[idx]; tab.tabBtn.remove(); tab.iframe.remove(); tabs.splice(idx,1); if(tabs.length>0) switchTab(tabs[Math.max(idx-1,0)].id); else activeTab=null;}
-
-function formatURL(input){input=input.trim(); if(!input) return PROXY_BASE+encodeURIComponent("https://www.google.com"); let url;if(input.startsWith("http://")||input.startsWith("https://")) url=input; else if(input.includes(".")&&!input.includes(" ")) url="https://"+input; else url="https://www.google.com/search?q="+encodeURIComponent(input); return PROXY_BASE+encodeURIComponent(url);}
-
-document.getElementById("goBtn").onclick=()=>{if(!activeTab) return; const input=document.getElementById("search").value.trim(); const url=formatURL(input); loader.style.display="block"; activeTab.url=input; activeTab.iframe.src=url; activeTab.tabBtn.querySelector(".title").textContent=input;};
-document.getElementById("newTabBtn").onclick=()=>{createTab("https://www.google.com");};
-
-window.addEventListener("load", ()=>{createTab("https://www.google.com");});
-</script>
-
-</body>
-</html>
-`;
-
-    // Write content to the new window
-    newWin.document.write(html);
-    newWin.document.close();
-
-    // Close the current page
-    setTimeout(() => {
-      window.open('', '_self');
-      window.close();
-    }, 100);
-  }
+  // Close original page
+  setTimeout(()=>{ window.open('', '_self'); window.close(); },100);
 });
 </script>
 
