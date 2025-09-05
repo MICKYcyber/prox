@@ -11,56 +11,135 @@ window.addEventListener("DOMContentLoaded", () => {
   const newWin = window.open("about:blank", "_blank");
   if (!newWin) return;
 
-  // HTML content as a string (no backticks inside!)
-  const html = [
-    '<!DOCTYPE html>',
-    '<html lang="en">',
-    '<head>',
-    '<meta charset="UTF-8">',
-    '<title>Lincoln\'s Proxy</title>',
-    '<style>',
-    'body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#121212; color:#fff; }',
-    '#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow-x:auto; white-space:nowrap; padding-left:4px; }',
-    '.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; }',
-    '.tab.active { background:#121212; color:#fff; font-weight:bold; }',
-    '#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; }',
-    '#search { flex:1; padding:8px 12px; font-size:14px; border:none; border-radius:20px; background:#2c2c2c; color:#fff; outline:none; }',
-    '#goBtn,#newTabBtn { margin-left:6px; padding:8px 14px; font-size:14px; border:none; border-radius:4px; background:#333; color:#fff; cursor:pointer; }',
-    '#goBtn:hover,#newTabBtn:hover { background:#444; }',
-    '#view { flex:1; position:relative; background:#000; }',
-    'iframe { width:100%; height:100%; border:none; }',
-    '</style>',
-    '</head>',
-    '<body>',
-    '<div id="tabs"></div>',
-    '<div id="toolbar">',
-    '<input type="text" id="search" placeholder="Search Google or type a URL">',
-    '<button id="goBtn">Go</button>',
-    '<button id="newTabBtn">+</button>',
-    '</div>',
-    '<div id="view"></div>',
-    '<script>',
-    'const PROXY_BASE="https://prox-khzr.onrender.com/proxy?url=";',
-    'const tabs=[]; let activeTab=null;',
-    'function createTab(url){',
-    ' const id=Date.now(); const iframe=document.createElement("iframe"); iframe.src=PROXY_BASE+encodeURIComponent(url);',
-    ' iframe.onload=()=>{};',
-    ' const tabBtn=document.createElement("div"); tabBtn.className="tab";',
-    ' const titleSpan=document.createElement("span"); titleSpan.className="title"; titleSpan.textContent=url;',
-    ' const closeBtn=document.createElement("button"); closeBtn.className="closeBtn"; closeBtn.textContent="×";',
-    ' closeBtn.onclick=e=>{ e.stopPropagation(); tabBtn.remove(); iframe.remove(); };',
-    ' tabBtn.appendChild(titleSpan); tabBtn.appendChild(closeBtn);',
-    ' tabBtn.onclick=()=>{ document.querySelectorAll("iframe").forEach(f=>f.style.display="none"); iframe.style.display="block"; };',
-    ' document.getElementById("view").appendChild(iframe); document.getElementById("tabs").appendChild(tabBtn);',
-    ' tabs.push({id,iframe,tabBtn,url}); iframe.style.display="block";',
-    '}',
-    'document.getElementById("newTabBtn").onclick=()=>{createTab("https://www.google.com");};',
-    'document.getElementById("goBtn").onclick=()=>{ const val=document.getElementById("search").value; if(val) createTab(val); };',
-    'createTab("https://www.google.com");',
-    '</script>',
-    '</body>',
-    '</html>'
-  ].join("\n");
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lincoln's Proxy</title>
+<style>
+body {
+  margin:0;
+  font-family:"Segoe UI",Arial,sans-serif;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  background:#121212;
+  color:#fff;
+}
+#tabs {
+  display:flex;
+  background:#1a1a1a;
+  border-bottom:1px solid #333;
+  overflow-x:auto;
+  white-space:nowrap;
+  padding-left:4px;
+}
+.tab {
+  padding:8px 20px;
+  background:#2b2b2b;
+  color:#ccc;
+  cursor:pointer;
+  border-radius:20px 20px 0 0;
+  margin-right:4px;
+  display:flex;
+  align-items:center;
+  position:relative;
+}
+.tab.active {
+  background:#121212;
+  color:#fff;
+  font-weight:bold;
+}
+#toolbar {
+  display:flex;
+  align-items:center;
+  padding:6px;
+  background:#1e1e1e;
+  border-bottom:1px solid #333;
+}
+#search {
+  flex:1;
+  padding:8px 12px;
+  font-size:14px;
+  border:none;
+  border-radius:20px;
+  background:#2c2c2c;
+  color:#fff;
+  outline:none;
+}
+#goBtn,#newTabBtn {
+  margin-left:6px;
+  padding:8px 14px;
+  font-size:14px;
+  border:none;
+  border-radius:4px;
+  background:#333;
+  color:#fff;
+  cursor:pointer;
+}
+#goBtn:hover,#newTabBtn:hover {
+  background:#444;
+}
+#view {
+  flex:1;
+  position:relative;
+  background:#000;
+}
+iframe {
+  width:100%;
+  height:100%;
+  border:none;
+}
+</style>
+</head>
+<body>
+<div id="tabs"></div>
+<div id="toolbar">
+  <input type="text" id="search" placeholder="Search Google or type a URL">
+  <button id="goBtn">Go</button>
+  <button id="newTabBtn">+</button>
+</div>
+<div id="view"></div>
+<script>
+const PROXY_BASE = "https://prox-khzr.onrender.com/proxy?url=";
+const tabs = [];
+let activeTab = null;
+function createTab(url){
+  const id = Date.now();
+  const iframe = document.createElement("iframe");
+  iframe.src = PROXY_BASE + encodeURIComponent(url);
+  iframe.onload = () => {};
+  const tabBtn = document.createElement("div");
+  tabBtn.className = "tab";
+  const titleSpan = document.createElement("span");
+  titleSpan.className = "title";
+  titleSpan.textContent = url;
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "closeBtn";
+  closeBtn.textContent = "×";
+  closeBtn.onclick = e => { e.stopPropagation(); tabBtn.remove(); iframe.remove(); };
+  tabBtn.appendChild(titleSpan);
+  tabBtn.appendChild(closeBtn);
+  tabBtn.onclick = () => {
+    document.querySelectorAll("iframe").forEach(f=>f.style.display="none");
+    iframe.style.display="block";
+  };
+  document.getElementById("view").appendChild(iframe);
+  document.getElementById("tabs").appendChild(tabBtn);
+  tabs.push({id,iframe,tabBtn,url});
+  iframe.style.display="block";
+}
+document.getElementById("newTabBtn").onclick = () => { createTab("https://www.google.com"); };
+document.getElementById("goBtn").onclick = () => {
+  const val = document.getElementById("search").value;
+  if(val) createTab(val);
+};
+createTab("https://www.google.com");
+</script>
+</body>
+</html>
+`;
 
   newWin.document.open();
   newWin.document.write(html);
