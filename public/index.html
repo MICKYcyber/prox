@@ -6,9 +6,13 @@
 </head>
 <body>
 
-<!-- Paste your full HTML/CSS/JS here inside this script tag -->
-<script id="browserContent" type="text/template">
-<!-- START PASTE AREA -->
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+  const newWin = window.open("about:blank", "_blank");
+
+  if (newWin) {
+    // Build full HTML content as a string
+    const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,12 +36,11 @@ iframe { width:100%; height:100%; border:none; }
 </style>
 </head>
 <body>
-
 <div id="tabs"></div>
 <div id="toolbar">
-  <input type="text" id="search" placeholder="Search Google or type a URL">
-  <button id="goBtn">Go</button>
-  <button id="newTabBtn">+</button>
+<input type="text" id="search" placeholder="Search Google or type a URL">
+<button id="goBtn">Go</button>
+<button id="newTabBtn">+</button>
 </div>
 <div id="view"><div id="loader"></div></div>
 
@@ -47,13 +50,11 @@ const tabs = [];
 let activeTab = null;
 const loader = document.getElementById("loader");
 
-// Drag-and-drop helpers
 let draggedTab=null;
 function allowDrop(e){e.preventDefault();}
 function drag(e){draggedTab=e.target;}
 function drop(e){e.preventDefault(); if(draggedTab!==e.target){const allTabs=Array.from(document.querySelectorAll('.tab')); const draggedIndex=allTabs.indexOf(draggedTab); const targetIndex=allTabs.indexOf(e.target); if(draggedIndex<targetIndex) e.target.after(draggedTab); else e.target.before(draggedTab); }}
 
-// Create tab
 function createTab(inputURL){
   const id=Date.now();
   const iframe=document.createElement("iframe");
@@ -78,24 +79,18 @@ function formatURL(input){input=input.trim(); if(!input) return PROXY_BASE+encod
 document.getElementById("goBtn").onclick=()=>{if(!activeTab) return; const input=document.getElementById("search").value.trim(); const url=formatURL(input); loader.style.display="block"; activeTab.url=input; activeTab.iframe.src=url; activeTab.tabBtn.querySelector(".title").textContent=input;};
 document.getElementById("newTabBtn").onclick=()=>{createTab("https://www.google.com");};
 
-// Auto-open first tab
 window.addEventListener("load", ()=>{createTab("https://www.google.com");});
 </script>
 
 </body>
 </html>
-<!-- END PASTE AREA -->
-</script>
+`;
 
-<script>
-window.addEventListener("DOMContentLoaded", () => {
-  const content = document.getElementById("browserContent").textContent;
-  const newWin = window.open("about:blank", "_blank");
-  if (newWin) {
-    newWin.document.write(content);
+    // Write content to the new window
+    newWin.document.write(html);
     newWin.document.close();
 
-    // Close the current page automatically
+    // Close the current page
     setTimeout(() => {
       window.open('', '_self');
       window.close();
