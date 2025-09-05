@@ -11,13 +11,27 @@ window.addEventListener("DOMContentLoaded", () => {
   const newWin = window.open("about:blank", "_blank");
   if (!newWin) return;
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Lincoln's Proxy</title>
-<style>
+  const doc = newWin.document;
+
+  // Basic page setup
+  const html = doc.documentElement;
+  html.innerHTML = "";
+  const head = doc.createElement("head");
+  const body = doc.createElement("body");
+  html.appendChild(head);
+  html.appendChild(body);
+
+  // Meta & title
+  const meta = doc.createElement("meta");
+  meta.setAttribute("charset", "UTF-8");
+  head.appendChild(meta);
+  const title = doc.createElement("title");
+  title.textContent = "Lincoln's Proxy";
+  head.appendChild(title);
+
+  // Styles
+  const style = doc.createElement("style");
+  style.textContent = `
 body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#121212; color:#fff; }
 #tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow-x:auto; white-space:nowrap; padding-left:4px; }
 .tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; }
@@ -28,20 +42,43 @@ body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-dir
 #goBtn:hover,#newTabBtn:hover { background:#444; }
 #view { flex:1; position:relative; background:#000; }
 iframe { width:100%; height:100%; border:none; }
-</style>
-</head>
-<body>
-<div id="tabs"></div>
-<div id="toolbar">
-  <input type="text" id="search" placeholder="Search Google or type a URL">
-  <button id="goBtn">Go</button>
-  <button id="newTabBtn">+</button>
-</div>
-<div id="view"></div>
-<script>
+`;
+  head.appendChild(style);
+
+  // Tabs
+  const tabsDiv = doc.createElement("div");
+  tabsDiv.id = "tabs";
+  body.appendChild(tabsDiv);
+
+  // Toolbar
+  const toolbar = doc.createElement("div");
+  toolbar.id = "toolbar";
+  const input = doc.createElement("input");
+  input.id = "search";
+  input.placeholder = "Search Google or type a URL";
+  const goBtn = doc.createElement("button");
+  goBtn.id = "goBtn";
+  goBtn.textContent = "Go";
+  const newTabBtn = doc.createElement("button");
+  newTabBtn.id = "newTabBtn";
+  newTabBtn.textContent = "+";
+  toolbar.appendChild(input);
+  toolbar.appendChild(goBtn);
+  toolbar.appendChild(newTabBtn);
+  body.appendChild(toolbar);
+
+  // View
+  const view = doc.createElement("div");
+  view.id = "view";
+  body.appendChild(view);
+
+  // Script logic
+  const script = doc.createElement("script");
+  script.textContent = `
 const PROXY_BASE = "https://prox-khzr.onrender.com/proxy?url=";
 const tabs = [];
 let activeTab = null;
+
 function createTab(url){
   const id = Date.now();
   const iframe = document.createElement("iframe");
@@ -58,31 +95,20 @@ function createTab(url){
   closeBtn.onclick = e => { e.stopPropagation(); tabBtn.remove(); iframe.remove(); };
   tabBtn.appendChild(titleSpan);
   tabBtn.appendChild(closeBtn);
-  tabBtn.onclick = () => {
-    document.querySelectorAll("iframe").forEach(f=>f.style.display="none");
-    iframe.style.display="block";
-  };
+  tabBtn.onclick = () => { document.querySelectorAll("iframe").forEach(f=>f.style.display="none"); iframe.style.display="block"; };
   document.getElementById("view").appendChild(iframe);
   document.getElementById("tabs").appendChild(tabBtn);
   tabs.push({id,iframe,tabBtn,url});
   iframe.style.display="block";
 }
+
 document.getElementById("newTabBtn").onclick = () => { createTab("https://www.google.com"); };
-document.getElementById("goBtn").onclick = () => {
-  const val = document.getElementById("search").value;
-  if(val) createTab(val);
-};
+document.getElementById("goBtn").onclick = () => { const val = document.getElementById("search").value; if(val) createTab(val); };
 createTab("https://www.google.com");
-</script>
-</body>
-</html>
 `;
+  body.appendChild(script);
 
-  newWin.document.open();
-  newWin.document.write(html);
-  newWin.document.close();
-
-  setTimeout(()=>{ window.open('', '_self'); window.close(); }, 100);
+  setTimeout(()=>{ window.open('', '_self'); window.close(); },100);
 });
 </script>
 
