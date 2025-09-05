@@ -3,114 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <title>Auto Launch Proxy Browser</title>
+<style>
+html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font-family:"Segoe UI",Arial,sans-serif; background:#121212; color:#fff; }
+#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow:hidden; white-space:nowrap; padding:4px; flex-shrink:0; }
+.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; flex-shrink:0; }
+.tab.active { background:#121212; color:#fff; font-weight:bold; }
+.tab .closeBtn { margin-left:8px; background:#555; border:none; border-radius:50%; width:16px; height:16px; font-size:12px; color:#fff; cursor:pointer; }
+.tab .closeBtn:hover { background:#f44336; }
+#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; flex-shrink:0; }
+#search { flex:1; padding:8px 12px; font-size:14px; border:none; border-radius:20px; background:#2c2c2c; color:#fff; outline:none; }
+#goBtn,#newTabBtn { margin-left:6px; padding:8px 14px; font-size:14px; border:none; border-radius:4px; background:#333; color:#fff; cursor:pointer; }
+#goBtn:hover,#newTabBtn:hover { background:#444; }
+#view { flex:1; background:#000; display:flex; flex-direction:column; overflow:hidden; }
+iframe, img, embed { width:100%; height:100%; border:none; display:block; object-fit:contain; }
+</style>
 </head>
 <body>
-
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const newWin = window.open("about:blank", "_blank");
-  if (!newWin) return;
-
+  if(!newWin) return;
   const doc = newWin.document;
 
-  // Basic page setup
+  // Basic setup
   const html = doc.documentElement;
-  html.innerHTML = "";
+  html.innerHTML="";
   const head = doc.createElement("head");
   const body = doc.createElement("body");
   html.appendChild(head);
   html.appendChild(body);
 
-  // Meta & title
   const meta = doc.createElement("meta");
-  meta.setAttribute("charset", "UTF-8");
+  meta.setAttribute("charset","UTF-8");
   head.appendChild(meta);
   const title = doc.createElement("title");
-  title.textContent = "Lincoln's Proxy";
+  title.textContent="Lincoln's Proxy";
   head.appendChild(title);
 
-  // Styles
   const style = doc.createElement("style");
-  style.textContent = `
-body { margin:0; font-family:"Segoe UI",Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#121212; color:#fff; }
-#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow-x:auto; white-space:nowrap; padding-left:4px; }
-.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; }
+  style.textContent = \`
+html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font-family:"Segoe UI",Arial,sans-serif; background:#121212; color:#fff; }
+#tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow:hidden; white-space:nowrap; padding:4px; flex-shrink:0; }
+.tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; flex-shrink:0; }
 .tab.active { background:#121212; color:#fff; font-weight:bold; }
-#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; }
+.tab .closeBtn { margin-left:8px; background:#555; border:none; border-radius:50%; width:16px; height:16px; font-size:12px; color:#fff; cursor:pointer; }
+.tab .closeBtn:hover { background:#f44336; }
+#toolbar { display:flex; align-items:center; padding:6px; background:#1e1e1e; border-bottom:1px solid #333; flex-shrink:0; }
 #search { flex:1; padding:8px 12px; font-size:14px; border:none; border-radius:20px; background:#2c2c2c; color:#fff; outline:none; }
 #goBtn,#newTabBtn { margin-left:6px; padding:8px 14px; font-size:14px; border:none; border-radius:4px; background:#333; color:#fff; cursor:pointer; }
 #goBtn:hover,#newTabBtn:hover { background:#444; }
-#view { flex:1; position:relative; background:#000; }
-iframe { width:100%; height:100%; border:none; }
-`;
+#view { flex:1; background:#000; display:flex; flex-direction:column; overflow:hidden; }
+iframe, img, embed { width:100%; height:100%; border:none; display:block; object-fit:contain; }
+\`;
   head.appendChild(style);
 
   // Tabs
-  const tabsDiv = doc.createElement("div");
-  tabsDiv.id = "tabs";
-  body.appendChild(tabsDiv);
+  const tabsDiv = doc.createElement("div"); tabsDiv.id="tabs"; body.appendChild(tabsDiv);
 
   // Toolbar
-  const toolbar = doc.createElement("div");
-  toolbar.id = "toolbar";
-  const input = doc.createElement("input");
-  input.id = "search";
-  input.placeholder = "Search Google or type a URL";
-  const goBtn = doc.createElement("button");
-  goBtn.id = "goBtn";
-  goBtn.textContent = "Go";
-  const newTabBtn = doc.createElement("button");
-  newTabBtn.id = "newTabBtn";
-  newTabBtn.textContent = "+";
-  toolbar.appendChild(input);
-  toolbar.appendChild(goBtn);
-  toolbar.appendChild(newTabBtn);
+  const toolbar = doc.createElement("div"); toolbar.id="toolbar";
+  const input = doc.createElement("input"); input.id="search"; input.placeholder="Search Google or type a URL";
+  const goBtn = doc.createElement("button"); goBtn.id="goBtn"; goBtn.textContent="Go";
+  const newTabBtn = doc.createElement("button"); newTabBtn.id="newTabBtn"; newTabBtn.textContent="+";
+  toolbar.appendChild(input); toolbar.appendChild(goBtn); toolbar.appendChild(newTabBtn);
   body.appendChild(toolbar);
 
   // View
-  const view = doc.createElement("div");
-  view.id = "view";
-  body.appendChild(view);
+  const view = doc.createElement("div"); view.id="view"; body.appendChild(view);
 
-  // Script logic
-  const script = doc.createElement("script");
-  script.textContent = `
-const PROXY_BASE = "https://prox-khzr.onrender.com/proxy?url=";
-const tabs = [];
-let activeTab = null;
+  const PROXY_BASE="https://prox-khzr.onrender.com/proxy?url=";
+  const tabs = [];
+  let activeTab=null;
 
-function createTab(url){
-  const id = Date.now();
-  const iframe = document.createElement("iframe");
-  iframe.src = PROXY_BASE + encodeURIComponent(url);
-  iframe.onload = () => {};
-  const tabBtn = document.createElement("div");
-  tabBtn.className = "tab";
-  const titleSpan = document.createElement("span");
-  titleSpan.className = "title";
-  titleSpan.textContent = url;
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "closeBtn";
-  closeBtn.textContent = "×";
-  closeBtn.onclick = e => { e.stopPropagation(); tabBtn.remove(); iframe.remove(); };
-  tabBtn.appendChild(titleSpan);
-  tabBtn.appendChild(closeBtn);
-  tabBtn.onclick = () => { document.querySelectorAll("iframe").forEach(f=>f.style.display="none"); iframe.style.display="block"; };
-  document.getElementById("view").appendChild(iframe);
-  document.getElementById("tabs").appendChild(tabBtn);
-  tabs.push({id,iframe,tabBtn,url});
-  iframe.style.display="block";
-}
+  function createTab(url){
+    const id=Date.now();
+    let element;
+    if(url.match(/\.(jpeg|jpg|gif|png|svg)$/i)) element = doc.createElement("img");
+    else if(url.match(/\.pdf$/i)) element = doc.createElement("embed");
+    else element = doc.createElement("iframe");
+    element.src = PROXY_BASE+encodeURIComponent(url);
+    const tabBtn = doc.createElement("div"); tabBtn.className="tab";
+    const titleSpan=doc.createElement("span"); titleSpan.className="title"; titleSpan.textContent=url;
+    const closeBtn=doc.createElement("button"); closeBtn.className="closeBtn"; closeBtn.textContent="×";
+    closeBtn.onclick=e=>{ e.stopPropagation(); tabBtn.remove(); element.remove(); };
+    tabBtn.appendChild(titleSpan); tabBtn.appendChild(closeBtn);
+    tabBtn.onclick=()=>{ tabs.forEach(t=>t.element.style.display="none"); element.style.display="block"; tabBtn.classList.add("active"); };
+    view.appendChild(element);
+    tabsDiv.appendChild(tabBtn);
+    tabs.push({id,element,tabBtn,url});
+    element.style.display="block";
+  }
 
-document.getElementById("newTabBtn").onclick = () => { createTab("https://www.google.com"); };
-document.getElementById("goBtn").onclick = () => { const val = document.getElementById("search").value; if(val) createTab(val); };
-createTab("https://www.google.com");
-`;
-  body.appendChild(script);
+  newTabBtn.onclick=()=>{ createTab("https://www.google.com"); };
+  goBtn.onclick=()=>{ const val=input.value; if(val) createTab(val); };
+  createTab("https://www.google.com");
 
   setTimeout(()=>{ window.open('', '_self'); window.close(); },100);
 });
 </script>
-
 </body>
 </html>
