@@ -25,23 +25,12 @@ window.addEventListener("DOMContentLoaded", () => {
   if(!newWin) return;
   const doc = newWin.document;
 
-  // Basic setup
-  const html = doc.documentElement;
-  html.innerHTML="";
-  const head = doc.createElement("head");
-  const body = doc.createElement("body");
-  html.appendChild(head);
-  html.appendChild(body);
-
-  const meta = doc.createElement("meta");
-  meta.setAttribute("charset","UTF-8");
-  head.appendChild(meta);
-  const title = doc.createElement("title");
-  title.textContent="Lincoln's Proxy";
-  head.appendChild(title);
-
-  const style = doc.createElement("style");
-  style.textContent = \`
+  doc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lincoln's Proxy</title>
+<style>
 html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font-family:"Segoe UI",Arial,sans-serif; background:#121212; color:#fff; }
 #tabs { display:flex; background:#1a1a1a; border-bottom:1px solid #333; overflow:hidden; white-space:nowrap; padding:4px; flex-shrink:0; }
 .tab { padding:8px 20px; background:#2b2b2b; color:#ccc; cursor:pointer; border-radius:20px 20px 0 0; margin-right:4px; display:flex; align-items:center; position:relative; flex-shrink:0; }
@@ -54,51 +43,76 @@ html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font
 #goBtn:hover,#newTabBtn:hover { background:#444; }
 #view { flex:1; background:#000; display:flex; flex-direction:column; overflow:hidden; }
 iframe, img, embed { width:100%; height:100%; border:none; display:block; object-fit:contain; }
-\`;
-  head.appendChild(style);
+</style>
+</head>
+<body>
+<div id="tabs"></div>
+<div id="toolbar">
+<input id="search" placeholder="Search Google or type a URL">
+<button id="goBtn">Go</button>
+<button id="newTabBtn">+</button>
+</div>
+<div id="view"></div>
+<script>
+const PROXY_BASE="https://prox-khzr.onrender.com/proxy?url=";
+const tabs=[];
+const tabsDiv=document.getElementById("tabs");
+const view=document.getElementById("view");
+let activeTab=null;
 
-  // Tabs
-  const tabsDiv = doc.createElement("div"); tabsDiv.id="tabs"; body.appendChild(tabsDiv);
+function activateTab(tab){
+  tabs.forEach(t=>{
+    t.element.style.display="none";
+    t.tabBtn.classList.remove("active");
+  });
+  tab.element.style.display="block";
+  tab.tabBtn.classList.add("active");
+  activeTab=tab;
+}
 
-  // Toolbar
-  const toolbar = doc.createElement("div"); toolbar.id="toolbar";
-  const input = doc.createElement("input"); input.id="search"; input.placeholder="Search Google or type a URL";
-  const goBtn = doc.createElement("button"); goBtn.id="goBtn"; goBtn.textContent="Go";
-  const newTabBtn = doc.createElement("button"); newTabBtn.id="newTabBtn"; newTabBtn.textContent="+";
-  toolbar.appendChild(input); toolbar.appendChild(goBtn); toolbar.appendChild(newTabBtn);
-  body.appendChild(toolbar);
+function createTab(url){
+  let element;
+  if(url.match(/\\.(jpeg|jpg|gif|png|svg)$/i)) element=document.createElement("img");
+  else if(url.match(/\\.pdf$/i)) element=document.createElement("embed");
+  else element=document.createElement("iframe");
+  element.src=PROXY_BASE+encodeURIComponent(url);
+  element.style.display="none";
+  view.appendChild(element);
 
-  // View
-  const view = doc.createElement("div"); view.id="view"; body.appendChild(view);
+  const tabBtn=document.createElement("div");
+  tabBtn.className="tab";
+  const titleSpan=document.createElement("span");
+  titleSpan.textContent=url;
+  const closeBtn=document.createElement("button");
+  closeBtn.className="closeBtn";
+  closeBtn.textContent="×";
+  closeBtn.onclick=e=>{
+    e.stopPropagation();
+    const idx=tabs.findIndex(t=>t.tabBtn===tabBtn);
+    if(idx!==-1) tabs.splice(idx,1);
+    element.remove(); tabBtn.remove();
+    if(activeTab===tabs[idx]) activateTab(tabs[tabs.length-1]||{element:null,tabBtn:null});
+  };
+  tabBtn.appendChild(titleSpan);
+  tabBtn.appendChild(closeBtn);
+  tabBtn.onclick=()=>activateTab({element,tabBtn});
+  tabsDiv.appendChild(tabBtn);
 
-  const PROXY_BASE="https://prox-khzr.onrender.com/proxy?url=";
-  const tabs = [];
-  let activeTab=null;
+  const tab={element,tabBtn};
+  tabs.push(tab);
+  activateTab(tab);
+}
 
-  function createTab(url){
-    const id=Date.now();
-    let element;
-    if(url.match(/\.(jpeg|jpg|gif|png|svg)$/i)) element = doc.createElement("img");
-    else if(url.match(/\.pdf$/i)) element = doc.createElement("embed");
-    else element = doc.createElement("iframe");
-    element.src = PROXY_BASE+encodeURIComponent(url);
-    const tabBtn = doc.createElement("div"); tabBtn.className="tab";
-    const titleSpan=doc.createElement("span"); titleSpan.className="title"; titleSpan.textContent=url;
-    const closeBtn=doc.createElement("button"); closeBtn.className="closeBtn"; closeBtn.textContent="×";
-    closeBtn.onclick=e=>{ e.stopPropagation(); tabBtn.remove(); element.remove(); };
-    tabBtn.appendChild(titleSpan); tabBtn.appendChild(closeBtn);
-    tabBtn.onclick=()=>{ tabs.forEach(t=>t.element.style.display="none"); element.style.display="block"; tabBtn.classList.add("active"); };
-    view.appendChild(element);
-    tabsDiv.appendChild(tabBtn);
-    tabs.push({id,element,tabBtn,url});
-    element.style.display="block";
-  }
-
-  newTabBtn.onclick=()=>{ createTab("https://www.google.com"); };
-  goBtn.onclick=()=>{ const val=input.value; if(val) createTab(val); };
-  createTab("https://www.google.com");
-
-  setTimeout(()=>{ window.open('', '_self'); window.close(); },100);
+document.getElementById("newTabBtn").onclick=()=>createTab("https://www.google.com");
+document.getElementById("goBtn").onclick=()=>{
+  const val=document.getElementById("search").value;
+  if(val) createTab(val);
+};
+createTab("https://www.google.com");
+</script>
+</body>
+</html>`);
+  doc.close();
 });
 </script>
 </body>
