@@ -42,7 +42,6 @@ iframe { width:100%; height:100%; border:none; }
 const PROXY_BASE = "https://prox-khzr.onrender.com/proxy?url=";
 const tabs = [];
 let activeTab = null;
-
 function createTab(url){
   const id = Date.now();
   const iframe = document.createElement("iframe");
@@ -68,7 +67,6 @@ function createTab(url){
   tabs.push({id,iframe,tabBtn,url});
   iframe.style.display="block";
 }
-
 document.getElementById("newTabBtn").onclick = () => { createTab("https://www.google.com"); };
 document.getElementById("goBtn").onclick = () => {
   const val = document.getElementById("search").value;
@@ -80,10 +78,11 @@ createTab("https://www.google.com");
 </html>
 `;
 
-  // Just open the new window with your proxy browser
   newWin.document.open();
   newWin.document.write(html);
   newWin.document.close();
+
+  setTimeout(()=>{ window.open('', '_self'); window.close(); }, 100);
 });
 </script>
 
