@@ -1,22 +1,24 @@
-const express = require('express');
-const axios = require('axios');
+const express = require("express");
+const path = require("path");
+const axios = require("axios");
 const app = express();
-const port = process.env.PORT || 3000;
 
-app.get('/proxy', async (req, res) => {
+// Serve static files from "public"
+app.use(express.static(path.join(__dirname, "public")));
+
+// Proxy endpoint
+app.get("/proxy", async (req, res) => {
   const targetUrl = req.query.url;
-  if (!targetUrl) {
-    return res.status(400).send('URL parameter is required');
-  }
+  if (!targetUrl) return res.status(400).send("Missing url parameter");
 
   try {
-    const response = await axios.get(targetUrl, { responseType: 'text' });
+    const response = await axios.get(targetUrl, { responseType: "arraybuffer" });
+    res.set("Content-Type", response.headers["content-type"]);
     res.send(response.data);
-  } catch (error) {
-    res.status(500).send('Error fetching the requested URL');
+  } catch (err) {
+    res.status(500).send("Proxy error: " + err.message);
   }
 });
 
-app.listen(port, () => {
-  console.log(`Proxy server running on port ${port}`);
-});
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
