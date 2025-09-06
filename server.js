@@ -3,7 +3,6 @@ const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const app = express();
 
-// Default site to mirror
 const TARGET_URL = "https://sites.google.com/view/22y/";
 
 function absolutify(url, base) {
@@ -14,25 +13,28 @@ function absolutify(url, base) {
   }
 }
 
-// Core mirror handler
 async function handleMirror(url, res) {
   try {
     const response = await fetch(url);
     let contentType = response.headers.get("content-type") || "";
     res.set("Access-Control-Allow-Origin", "*");
 
-    // If it's not HTML, just pipe it back
+    // If not HTML, just stream it
     if (!contentType.includes("text/html")) {
       const buffer = await response.buffer();
       res.set("content-type", contentType);
       return res.send(buffer);
     }
 
-    // Parse HTML and rewrite asset URLs
+    // Parse HTML
     let html = await response.text();
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
+    // 🔹 Remove <base> tags (force relative URLs to stay proxied)
+    document.querySelectorAll("base").forEach(el => el.remove());
+
+    // Rewrite attributes to proxy
     const rewriteAttr = (selector, attr) => {
       document.querySelectorAll(selector).forEach(el => {
         const val = el.getAttribute(attr);
@@ -43,7 +45,6 @@ async function handleMirror(url, res) {
       });
     };
 
-    // Rewrite links/scripts/images/etc
     rewriteAttr("a[href]", "href");
     rewriteAttr("link[href]", "href");
     rewriteAttr("script[src]", "src");
@@ -51,13 +52,25 @@ async function handleMirror(url, res) {
     rewriteAttr("iframe[src]", "src");
     rewriteAttr("form[action]", "action");
 
+    // 🔹 Inject anti-redirect JS
+    const patch = document.createElement("script");
+    patch.textContent = `
+      // Block forced redirects
+      Object.defineProperty(window, "location", {
+        configurable: false,
+        enumerable: true,
+        value: { href: "about:blank" }
+      });
+    `;
+    document.body.appendChild(patch);
+
     res.send(dom.serialize());
   } catch (err) {
     res.status(500).send("Proxy error: " + err.message);
   }
 }
 
-// Default mirror endpoint
+// Mirror endpoint
 app.get("/mirror", async (req, res) => {
   const target = req.query.url || TARGET_URL;
   await handleMirror(target, res);
