@@ -1,24 +1,24 @@
 const express = require("express");
-const path = require("path");
-const axios = require("axios");
-const app = express();
+const fetch = require("node-fetch");
 
-// Serve static files from "public"
-app.use(express.static(path.join(__dirname, "public")));
+const app = express();
+const PORT = 3000;
+
+// Target site to proxy
+const TARGET_URL = "https://sites.google.com/view/22y/";
 
 // Proxy endpoint
-app.get("/proxy", async (req, res) => {
-  const targetUrl = req.query.url;
-  if (!targetUrl) return res.status(400).send("Missing url parameter");
-
+app.get("/mirror", async (req, res) => {
   try {
-    const response = await axios.get(targetUrl, { responseType: "arraybuffer" });
-    res.set("Content-Type", response.headers["content-type"]);
-    res.send(response.data);
+    const response = await fetch(TARGET_URL);
+    const html = await response.text();
+    res.set("Access-Control-Allow-Origin", "*");
+    res.send(html);
   } catch (err) {
     res.status(500).send("Proxy error: " + err.message);
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(PORT, () => {
+  console.log("Proxy server running at http://localhost:" + PORT);
+});
