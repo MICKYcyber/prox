@@ -1,29 +1,44 @@
 const express = require("express");
 const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
-
 const app = express();
 
-// Change this to your protected site
 const TARGET_URL = "https://sites.google.com/view/22y/";
+
+function absolutify(url, base) {
+  try {
+    return new URL(url, base).toString();
+  } catch {
+    return url;
+  }
+}
 
 app.get("/mirror", async (req, res) => {
   try {
     const response = await fetch(TARGET_URL);
     let html = await response.text();
 
-    // Rewrite asset URLs to go through proxy
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    // handle <link>, <script>, <img>, <a>
-    document.querySelectorAll("link[href], script[src], img[src], a[href]").forEach(el => {
-      let attr = el.tagName === "A" ? "href" : (el.hasAttribute("src") ? "src" : "href");
-      const url = el.getAttribute(attr);
-      if (url && !url.startsWith("http")) {
-        el.setAttribute(attr, TARGET_URL + url);
-      }
-    });
+    // Rewriting function
+    const rewriteAttr = (selector, attr) => {
+      document.querySelectorAll(selector).forEach(el => {
+        const val = el.getAttribute(attr);
+        if (val) {
+          const abs = absolutify(val, TARGET_URL);
+          el.setAttribute(attr, `/mirror?url=${encodeURIComponent(abs)}`);
+        }
+      });
+    };
+
+    // Rewrite all important tags
+    rewriteAttr("a[href]", "href");
+    rewriteAttr("link[href]", "href");
+    rewriteAttr("script[src]", "src");
+    rewriteAttr("img[src]", "src");
+    rewriteAttr("iframe[src]", "src");
+    rewriteAttr("form[action]", "action");
 
     html = dom.serialize();
 
@@ -34,6 +49,20 @@ app.get("/mirror", async (req, res) => {
   }
 });
 
+// Handle /mirror?url=...
+app.get("/mirror", async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).send("Missing url");
+
+  try {
+    const response = await fetch(url);
+    res.set("Access-Control-Allow-Origin", "*");
+    res.send(await response.text());
+  } catch (err) {
+    res.status(500).send("Proxy error: " + err.message);
+  }
+});
+
 app.listen(3000, () => {
-  console.log("Proxy server running on port 3000");
+  console.log("Proxy running at http://localhost:3000");
 });
